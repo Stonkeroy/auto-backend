@@ -8,7 +8,7 @@ import { CloudinaryStorage } from 'multer-storage-cloudinary'
 
 import { registerValidation, loginValidation, carCreateValidation } from './validations.js'
 import { handleValidationErrors, checkAuth, checkAdmin } from './utils/index.js'
-import { UserController, CarController, AIController } from './controllers/index.js'
+import { UserController, CarController, AiController } from './controllers/index.js'
 
 // ── MongoDB ──────────────────────────────────────────────────
 mongoose
@@ -71,8 +71,8 @@ app.get('/admin/cars',    checkAuth, checkAdmin, CarController.getPending)
 app.patch('/admin/cars/:id', checkAuth, checkAdmin, CarController.moderate)
 
 // ── AI ───────────────────────────────────────────────────────
-app.post('/api/ai/chat',            AIController.chat)
-app.post('/api/ai/chat-with-cars',  AIController.chatWithCars)
+app.post('/api/ai/chat',            AiController.chat)
+app.post('/api/ai/chat-with-cars',  AiController.chatWithCars)
 
 // ── Start ─────────────────────────────────────────────────────
 app.listen(process.env.PORT || 4444, (err) => {
