@@ -8,7 +8,7 @@ import { CloudinaryStorage } from 'multer-storage-cloudinary'
 
 import { registerValidation, loginValidation, carCreateValidation } from './validations.js'
 import { handleValidationErrors, checkAuth, checkAdmin } from './utils/index.js'
-import { UserController, CarController, AiController } from './controllers/index.js'
+import { UserController, CarController, AIController } from './controllers/index.js'
 
 // ── MongoDB ──────────────────────────────────────────────────
 mongoose
@@ -27,7 +27,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder: 'auto-marketplace',   // папка в Cloudinary
+    folder: 'auto-marketplace',
     allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'avif'],
     transformation: [{ width: 1200, crop: 'limit', quality: 'auto' }],
   },
@@ -37,8 +37,15 @@ const upload = multer({ storage })
 
 // ── App ──────────────────────────────────────────────────────
 const app = express()
+
+// CORS має стояти ПЕРШИМ middleware, ще до express.json()
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}))
+
 app.use(express.json())
-app.use(cors())
 
 // ── Auth ─────────────────────────────────────────────────────
 app.post('/auth/login',    loginValidation,    handleValidationErrors, UserController.login)
@@ -47,7 +54,6 @@ app.get('/auth/me',        checkAuth,                                  UserContr
 
 // ── Upload (тепер на Cloudinary) ─────────────────────────────
 app.post('/upload', checkAuth, upload.array('images', 10), (req, res) => {
-  // Cloudinary повертає повний URL замість локального шляху
   const urls = req.files.map(f => f.path)
   res.json({ urls })
 })
@@ -65,8 +71,8 @@ app.get('/admin/cars',    checkAuth, checkAdmin, CarController.getPending)
 app.patch('/admin/cars/:id', checkAuth, checkAdmin, CarController.moderate)
 
 // ── AI ───────────────────────────────────────────────────────
-app.post('/api/ai/chat',            AiController.chat)
-app.post('/api/ai/chat-with-cars',  AiController.chatWithCars)
+app.post('/api/ai/chat',            AIController.chat)
+app.post('/api/ai/chat-with-cars',  AIController.chatWithCars)
 
 // ── Start ─────────────────────────────────────────────────────
 app.listen(process.env.PORT || 4444, (err) => {
